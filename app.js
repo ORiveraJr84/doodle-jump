@@ -2,13 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid");
   const doodler = document.createElement("div");
   let doodlerLeftSpace = 50;
-  let doodlerBottomSpace = 150;
+  let startPoint = 150;
+  let doodlerBottomSpace = startPoint;
   let isGameOver = false;
   let platformCount = 5;
   let platforms = [];
   let upTimerId;
   let downTimerId;
   let isJumping = true;
+  let isGoingLeft = false;
+  let isGoingRight = false;
+  let leftTimerId;
+  let rightTimerId;
 
   const createDoodler = () => {
     doodler.classList.add("doodler");
@@ -59,17 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
     upTimerId = setInterval(() => {
       doodlerBottomSpace += 20;
       doodler.style.bottom = `${doodlerBottomSpace}px`;
-      if (doodlerBottomSpace > 350) {
+      if (doodlerBottomSpace > startPoint + 200) {
         fall();
       }
-    }, 300);
+    }, 30);
   };
 
   const fall = () => {
     clearInterval(upTimerId);
     isJumping = false;
     downTimerId = setInterval(() => {
-      doodlerBottomSpace -= 70;
+      doodlerBottomSpace -= 50;
       doodler.style.bottom = `${doodlerBottomSpace}px`;
       if (doodlerBottomSpace <= 0) {
         gameOver();
@@ -82,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
           doodlerLeftSpace <= platform.leftSpacing + 85 &&
           !isJumping
         ) {
-          log("landed");
+          console.log("landed");
+          startPoint = doodlerBottomSpace;
           jump();
         }
       });
@@ -96,25 +102,74 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(downTimerId);
   };
 
+  const showGameInfo = () => {
+    console.log(`doodlerLeftSpace => ${doodlerLeftSpace}`);
+    console.log(`startPoint => ${startPoint}`);
+    console.log(`doodlerBottomSpace => ${doodlerBottomSpace}`);
+    console.log(`isGameOver => ${isGameOver}`);
+    console.log(`platformCount => ${platformCount}`);
+    console.log(`platforms => ${platforms}`);
+    console.log(`upTimerId => ${upTimerId}`);
+    console.log(`downTimerId => ${downTimerId}`);
+    console.log(`isJumping => ${isJumping}`);
+    console.log(`isGoingLeft => ${isGoingLeft}`);
+    console.log(`isGoingRight => ${isGoingRight}`);
+    console.log(`leftTimerId => ${leftTimerId}`);
+    console.log(`rightTimerId => ${rightTimerId}`);
+  };
+
   const control = (event) => {
+    console.log(event);
     switch (event.key) {
       case "ArrowLeft":
-      //   move left
+        moveLeft();
+        showGameInfo();
+        break;
       case "ArrowRight":
-      //   move right
-      case "ArrowUp":
-      //   move up
+        moveRight();
+        showGameInfo();
+        break;
       default:
         break;
     }
+  };
+
+  const moveLeft = () => {
+    if (isGoingRight) {
+        clearInterval()
+      clearInterval(rightTimerId);
+      isGoingRight = false;
+    }
+    isGoingLeft = true;
+    leftTimerId = setInterval(() => {
+      if (doodlerLeftSpace >= 0) {
+        doodlerLeftSpace -= 5;
+        doodler.style.left = `${doodlerLeftSpace}px`;
+      } else moveRight();
+    }, 30);
+  };
+
+  const moveRight = () => {
+    if (isGoingLeft) {
+      clearInterval(leftTimerId);
+      isGoingLeft = false;
+    }
+    isGoingRight = true;
+    rightTimerId = setInterval(() => {
+      if (doodlerLeftSpace <= 340) {
+        doodlerLeftSpace += 5;
+        doodler.style.left = `${doodlerLeftSpace}px`;
+      } else moveLeft();
+    }, 30);
   };
 
   const start = () => {
     if (!isGameOver) {
       createPlatforms();
       createDoodler();
-      setInterval(movePlatforms, 200);
+      setInterval(movePlatforms, 40);
       jump();
+      document.addEventListener("keyup", control);
     }
   };
 
